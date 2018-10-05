@@ -178,7 +178,7 @@ public:
         Next_Job=NULL;
     }
 
-    ~JOB();
+
 };
 
 class InputWell
@@ -261,12 +261,12 @@ public:
 
     JOB* FRP_EarliestJob()//找到最先进入输入井且未完成的作业
     {
-        //cout<<"FRP_EarliestJob was called"<<endl;
+
 
         string EarliestJob="25:00";
         JOB *find=(*P_InputWell).P_FirstJob;
         JOB *P_EarliestJob=NULL;
-        //cout<<"very OK"<<endl;
+
         do{
             if (find->EntryTime<EarliestJob&&find->JOBDone==0)
             {
@@ -277,8 +277,28 @@ public:
         }
         while(find!=(*P_InputWell).P_LastJob);
         if (find->EntryTime<EarliestJob&&find->JOBDone==0) P_EarliestJob=find;
-        //cout<<P_EarliestJob->JobID<<endl;
+
         return P_EarliestJob;
+    }
+
+    JOB* FRP_ShortestJob(string ptime)//找到估计运行时间最短井且未完成的作业
+    {
+
+
+        int ShortestJob=1500;
+        JOB *find=P_InputWell->P_FirstJob;
+        JOB *P_ShortestJob=NULL;
+        do{
+            if (find->E_RunningTime<ShortestJob&&find->JOBDone==0&&!(ptime<find->EntryTime))
+            {
+                ShortestJob=find->E_RunningTime;
+                P_ShortestJob=find;
+            }
+            find=find->Next_Job;
+        }
+        while(find!=(*P_InputWell).P_LastJob);
+        if (find->E_RunningTime<ShortestJob&&find->JOBDone==0&&!(ptime<find->EntryTime)) P_ShortestJob=find;
+        return P_ShortestJob;
     }
 
     int Is_AllDone()//判断工作是否全被做完
@@ -319,6 +339,7 @@ public:
 
     }
 
+
     void FCFS()
     {
         while(!this->Is_AllDone())
@@ -335,6 +356,36 @@ public:
         }
     }
 
+
+
+
+
+
+    void SJF(){
+
+      while(!this->Is_AllDone())
+      {
+          JOB *deal=FRP_ShortestJob(this->PresentTime);
+          deal->StartTime=PresentTime;
+          deal->EndTime=(deal->StartTime)+(deal->E_RunningTime);
+          PresentTime=PresentTime+(deal->E_RunningTime);
+          deal->TurnaroundTime=(deal->EndTime)-(deal->EntryTime);
+          deal->R_TurnaroundTime=(double)(deal->TurnaroundTime)/(double)(deal->E_RunningTime);
+          //cout<<"RRR"<<deal->TurnaroundTime<<"/"<<deal->E_RunningTime<<"="<<deal->R_TurnaroundTime;
+          deal->JOBDone=1;
+          QueneEntry(deal);
+
+
+      }
+
+    }
+
+
+
+
+
+
+
     void R_Show()
     {
         JOB *display=this->P_QFront;
@@ -343,7 +394,7 @@ public:
 
         //cout<<"@"<<P_InputWell->num_job<<endl;
         int count=0;
-        cout<<"作业"<<"进入时间"<<"估计运行时间（分钟)"<<"开始时间"<<"结束时间"<<"周转时间"<<"带权周转时间"<<endl;
+        cout<<"作业          "<<"进入时间        "<<"估计运行时间（分钟)  "<<"开始时间        "<<"结束时间        "<<"周转时间        "<<"带权周转时间        "<<endl;
         do
         {
             TTREM[count]=display->TurnaroundTime;
@@ -351,7 +402,7 @@ public:
             RTREM[count]=display->R_TurnaroundTime;
             //cout<<"RTREM"<<count<<"="<<RTREM[count]<<endl;
             count++;
-            cout<<display->JobID<<display->EntryTime<<display->E_RunningTime<<display->StartTime<<display->EndTime<<display->TurnaroundTime<<display->R_TurnaroundTime<<endl;
+            cout<<display->JobID<<"             "<<display->EntryTime<<"            "<<display->E_RunningTime<<"               "<<display->StartTime<<"           "<<display->EndTime<<"           "<<display->TurnaroundTime<<"             "<<display->R_TurnaroundTime<<"              "<<endl;
             display=display->Next_Job;
         }
         while(display!=NULL);
@@ -385,7 +436,9 @@ int main()
 {
     Processor test1;
     test1.P_InputWell=new InputWell();
-    test1.FCFS();
+    //test1.FCFS();
+    //test1.R_Show();
+    test1.SJF();
     test1.R_Show();
     return 0;
 }
