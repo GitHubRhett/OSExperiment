@@ -258,6 +258,10 @@ public:
         cout<<endl;
     }
 
+    double ResponseRatio(JOB *pjob)
+    {
+        return (double)(PresentTime-pjob->EntryTime+pjob->E_RunningTime)/(double)(pjob->E_RunningTime);
+    }
 
     JOB* FRP_EarliestJob()//找到最先进入输入井且未完成的作业
     {
@@ -281,7 +285,7 @@ public:
         return P_EarliestJob;
     }
 
-    JOB* FRP_ShortestJob(string ptime)//找到估计运行时间最短井且未完成的作业
+    JOB* FRP_ShortestJob(string ptime)//找到运行时间最短井且未完成的作业
     {
 
 
@@ -300,6 +304,28 @@ public:
         if (find->E_RunningTime<ShortestJob&&find->JOBDone==0&&!(ptime<find->EntryTime)) P_ShortestJob=find;
         return P_ShortestJob;
     }
+
+    JOB* FRP_HRRatioJob(string ptime)//找到响应比井且未完成的作业
+    {
+
+
+        int HighestRatio=0;
+        JOB *find=P_InputWell->P_FirstJob;
+        JOB *P_HighestRatio=NULL;
+        do{
+            if (ResponseRatio(find)>HighestRatio&&find->JOBDone==0&&!(ptime<find->EntryTime))
+            {
+                HighestRatio=ResponseRatio(find);
+                P_HighestRatio=find;
+            }
+            find=find->Next_Job;
+        }
+        while(find!=(*P_InputWell).P_LastJob);
+        if (ResponseRatio(find)>HighestRatio&&find->JOBDone==0&&!(ptime<find->EntryTime)) P_HighestRatio=find;
+        return P_HighestRatio;
+    }
+
+
 
     int Is_AllDone()//判断工作是否全被做完
     {
@@ -350,16 +376,10 @@ public:
             PresentTime=PresentTime+(deal->E_RunningTime);
             deal->TurnaroundTime=(deal->EndTime)-(deal->EntryTime);
             deal->R_TurnaroundTime=(double)(deal->TurnaroundTime)/(double)(deal->E_RunningTime);
-            //cout<<"RRR"<<deal->TurnaroundTime<<"/"<<deal->E_RunningTime<<"="<<deal->R_TurnaroundTime;
             deal->JOBDone=1;
             QueneEntry(deal);
         }
     }
-
-
-
-
-
 
     void SJF(){
 
@@ -371,7 +391,6 @@ public:
           PresentTime=PresentTime+(deal->E_RunningTime);
           deal->TurnaroundTime=(deal->EndTime)-(deal->EntryTime);
           deal->R_TurnaroundTime=(double)(deal->TurnaroundTime)/(double)(deal->E_RunningTime);
-          //cout<<"RRR"<<deal->TurnaroundTime<<"/"<<deal->E_RunningTime<<"="<<deal->R_TurnaroundTime;
           deal->JOBDone=1;
           QueneEntry(deal);
 
@@ -380,11 +399,19 @@ public:
 
     }
 
-
-
-
-
-
+    void HRRN() {
+        while(!this->Is_AllDone())
+        {
+            JOB *deal=FRP_HRRatioJob(this->PresentTime);
+            deal->StartTime=PresentTime;
+            deal->EndTime=(deal->StartTime)+(deal->E_RunningTime);
+            PresentTime=PresentTime+(deal->E_RunningTime);
+            deal->TurnaroundTime=(deal->EndTime)-(deal->EntryTime);
+            deal->R_TurnaroundTime=(double)(deal->TurnaroundTime)/(double)(deal->E_RunningTime);
+            deal->JOBDone=1;
+            QueneEntry(deal);
+        }
+    }
 
     void R_Show()
     {
@@ -438,7 +465,9 @@ int main()
     test1.P_InputWell=new InputWell();
     //test1.FCFS();
     //test1.R_Show();
-    test1.SJF();
+    //test1.SJF();
+    //test1.R_Show();
+    test1.HRRN();
     test1.R_Show();
     return 0;
 }
