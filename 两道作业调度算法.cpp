@@ -7,7 +7,7 @@ using namespace std;
 
 //***********************函数定义区************************//
 
-int &  operator -( const  string & time1, const  string &time2)
+int &  operator -( const  string & time1, const  string &time2)//两个标准时间相减，返回相差分钟数
 {
     int r_time;
     int hour_time1,hour_time2,hour;
@@ -60,7 +60,7 @@ int &  operator -( const  string & time1, const  string &time2)
     return  r_time;
 }
 
-bool operator < (const  string & time1, const  string &time2)
+bool operator < (const  string & time1, const  string &time2)//判断time1和time2的时间先后
 {
     int hour_time1,hour_time2;
     int minute_time1,minute_time2;
@@ -87,7 +87,7 @@ bool operator < (const  string & time1, const  string &time2)
 }
 
 
-string & operator + ( const  string & time1, int Etime)
+string & operator + ( const  string & time1, int Etime)//标准时间格式time1与整数分钟数Etime相加，返回time1过了Etime分钟后的标准时间格式
 {
     string r_time;
     int hour_time1,hour_time2,hour;
@@ -189,7 +189,8 @@ public:
     JOB *P_LastJob;
     int num_job;
 
-    InputWell(){
+    InputWell()//输入井的初始化
+    {
         int I_JobID=0;//存储作业ID的过程变量
         JOB* p;//过程指针
         this->num_job=0;
@@ -227,7 +228,7 @@ public:
         //this->test_Show();
     }
 
-    void test_Show()
+    void test_Show()//测试用过程函数
     {
         JOB *display=this->P_FirstJob;
 
@@ -252,7 +253,7 @@ public:
     JOB *P_JOB1;//第一道作业
     JOB *P_JOB2;//第二道作业
     string PresentTime;
-    Processor()
+    Processor()//处理器初始化
     {
         P_InputWell=NULL;
         P_QFront=NULL;
@@ -346,7 +347,7 @@ public:
     }
 
 
-    bool  compare ( JOB * JOB1,  JOB * JOB2)
+    bool  compare ( JOB * JOB1,  JOB * JOB2)//JOB1与JOB2相比较，得出谁的剩余工作时间最短
     {
         cout<<"compare was called"<<endl;
         if(JOB1->JOBDone==2)
@@ -367,7 +368,7 @@ public:
 
     }
 
-    JOB* FindNextJOB()
+    JOB* FindNextJOB()//找出下一个要从输入井进入内存的JOB（常用于最开始第二个作业进入时）
     {
 
         int minTSpace=10000;//最短时间间隔
@@ -386,7 +387,7 @@ public:
         return P_NextJOB;
     }
 
-    void JobDeal(string ntime)
+    void JobDeal(string ntime)//作业不完全处理，只处理至ntime处，作业标志位置为2（半处理状态）
     {
         JOB *deal=this->PJOBCHOOSE;
         deal->StartTime=this->PresentTime;
@@ -399,7 +400,7 @@ public:
 
     }
 
-    void JobDeal()
+    void JobDeal()//作业完全处理，作业标志位置为1
     {
         cout<<"JOb deal was called"<<endl;
         if(this->PJOBCHOOSE->JOBDone==2)
@@ -429,7 +430,7 @@ public:
 
     }
 
-    void CompareInterrupt()
+    void CompareInterrupt()//比较中断，每当一个作业进入内存后，触发中断，对cpu的选择作出判断
     {
         cout<<"zhongduan was called"<<endl;
         if(this->P_JOB1==NULL||this->P_JOB2==NULL)
@@ -459,33 +460,35 @@ public:
     }
 
 
-    void Dprog_BatchProcessing()
+    void Dprog_BatchProcessing()//二道作业批处理
     {   JOB *deal=NULL;
         while(!this->Is_AllDone())
         {
             if(this->P_JOB1==NULL||this->P_JOB2==NULL){
 
                 deal = this->FRP_ShortestJob(this->PresentTime);
-                if(this->P_JOB1==NULL&&deal!=NULL) {
+                if(this->P_JOB1==NULL&&deal!=NULL)//当第一道作业位为空
+                {
                     cout<<"@@@@@@@@@@@@1"<<endl;
                     this->P_JOB1 = deal;
                     this->CompareInterrupt();
                     cout<<"nowtime"<<this->PresentTime<<endl;
                 }
-                else if(this->P_JOB2==NULL&&deal!=NULL) {
+                else if(this->P_JOB2==NULL&&deal!=NULL)//当第二道作业位为空
+                {
                     cout<<"@@@@@@@@@@@@2"<<endl;
                     this->P_JOB2=deal;
                     this->CompareInterrupt();
                     cout<<"nowtime"<<this->PresentTime<<endl;
                 }
-                else if(this->P_JOB1==NULL)
+                else if(this->P_JOB1==NULL)//当只剩下一道作业未处理，且为作业2时
                 {
                     cout<<"win"<<endl;
                     this->PJOBCHOOSE=this->P_JOB2;
                     this->JobDeal();
                     break;
                 }
-                else if(this->P_JOB2==NULL)
+                else if(this->P_JOB2==NULL)//当只剩下一道作业未处理，且为作业1时
                 {
                     cout<<"win too"<<endl;
                     this->PJOBCHOOSE=this->P_JOB1;
@@ -498,7 +501,7 @@ public:
 
     }
 
-    void R_Show()
+    void R_Show()//显示处理结果
     {
         JOB *display=this->P_QFront;
         int TTREM[P_InputWell->num_job];//周转时间记录
